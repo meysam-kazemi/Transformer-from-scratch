@@ -5,13 +5,34 @@ from torch.functional import F
 
 
 class MultiHeadAttention(nn.Module):
+    """
+    Implements the Multi-Head Attention mechanism as described in the "Attention is All You Need" paper.
+
+    This module divides the input embedding into multiple smaller heads, then computes attention independently 
+    on each head before concatenating the results and projecting back to the original embedding dimension.
+
+    Args:
+        embed_dim (int): The dimensionality of the input embeddings. Default is 512.
+        n_heads (int): Number of attention heads. Default is 8.
+
+    Attributes:
+        d (int): Dimensionality for each head computed as embed_dim // n_heads.
+        query (nn.Linear): Linear projection layer for the query.
+        key (nn.Linear): Linear projection layer for the key.
+        value (nn.Linear): Linear projection layer for the value.
+        fc (nn.Linear): Final fully connected layer to project concatenated outputs back to embed_dim.
+    """
     def __init__(self, embed_dim:int=512, n_heads:int=8):
         super().__init__()
         self.embed_dim = embed_dim
         self.n_heads = n_heads
+
+        # Dimensionality of each head (head dimension)
         self.d = int(embed_dim/n_heads)
 
         # Query and Key and Value matrices
+        #  These layers transform the input (after splitting into heads) into an appropriate representation.
+
         self.query = nn.Linear(self.d, self.d, bias=False)
         self.key = nn.Linear(self.d, self.d, bias=False)
         self.value = nn.Linear(self.d, self.d, bias=False)
