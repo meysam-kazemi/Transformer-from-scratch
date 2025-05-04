@@ -12,7 +12,7 @@ class PositionalEncoding(nn.Module):
         position = torch.arange(0, max_length).unsqueeze(1)
 
         div_term = torch.exp(
-            torch.arange(0, d_model, 2) * -(log(10000.0) / d_model)
+            torch.arange(0, d_model, 2) * -(np.log(10000.0) / d_model)
         )
 
         positional_encoding[:, 0::2] = torch.sin(position * div_term)
@@ -26,3 +26,6 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x + self.pe[:, : x.size(1)].requires_grad_(False)
         return self.dropout(x)
+
+
+
