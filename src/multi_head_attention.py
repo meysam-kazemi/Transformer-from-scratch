@@ -41,6 +41,19 @@ class MultiHeadAttention(nn.Module):
         self.fc = nn.Linear(self.embed_dim, self.embed_dim)
         
     def forward(self, query, key, value, mask=None):
+        """
+        Compute the multi-head attention given query, key, and value tensors.
+
+        Args:
+            query (torch.Tensor): Query tensor of shape (batch_size, query_len, embed_dim).
+            key (torch.Tensor): Key tensor of shape (batch_size, key_len, embed_dim).
+            value (torch.Tensor): Value tensor of shape (batch_size, value_len, embed_dim).
+            mask (torch.Tensor, optional): Mask tensor to prevent attention on certain positions.
+                                           Should be broadcastable to shape (batch_size, n_heads, query_len, key_len).
+
+        Returns:
+            torch.Tensor: Output tensor after applying multi-head attention, with shape (batch_size, query_len, embed_dim).
+        """
         batch_size = query.size(0)
         key_len, query_len, value_len = key.size(1), query.size(1), value.size(1)
 
