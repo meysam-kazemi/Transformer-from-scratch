@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import numpy as np
 import torch
 from torch import nn
@@ -7,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.embedder import Embedder
 from src.multi_head_attention import MultiHeadAttention
 from src.positional_encoding import PositionalEncoding
+from src.block import Block
 
 class Encoder(nn.Module):
     def __init__(
@@ -15,7 +17,7 @@ class Encoder(nn.Module):
         vocab_size,
         embed_dim,
         num_blocks=6,
-        expantion_factor=4,
+        expansion_factor=4,
         heads=8,
         dropout=0.2,
     ):
@@ -34,5 +36,17 @@ class Encoder(nn.Module):
         super().__init__()
         self.embedding = Embedder(vocab_size, embed_dim)
         self.pe = PositionalEncoding(embed_dim, seq_len)
+        # list of blocks
+        self.blocks = nn.ModuleList([copy.deepcopy(Block(embed_dim, heads, expansion_factor, dropout)) for _ in range(num_blocks)])
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.pe(x)
+        for block in self.blocks:
+            x = block(x, x, x)
+
+        return x
+
+
         
 
