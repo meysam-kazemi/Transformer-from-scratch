@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import torch
 from torch import nn
-sys.path.append(os.path.join(os.path.dirname(__file__, "..")))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from src.multi_head_attention import MultiHeadAttention
 from src.embedder import Embedder
 from src.positional_encoding import PositionalEncoding
@@ -37,7 +37,7 @@ class TransformerBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, key, query, value, mask=None):
+    def forward(self, query, key, value, mask=None):
         # first, pass the key, query and value through the multi head attention layer
         attention_out = self.attention(query, key, value, mask)  # e.g.: 32x10x512
 
