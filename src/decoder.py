@@ -6,44 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import replicate
 from src.multi_head_attentio import MultiHeadAttention
 from src.positional_encoding import PositionalEncoding
-from src.block import MultiHeadAttention, Block
-
-
-class Decoder(nn.Module):
-
-    def __init__(self,
-                 embed_dim=512,
-                 heads=8,
-                 expansion_factor=4,
-                 dropout=0.2
-                 ):
-        """
-        The DecoderBlock which will consist of the TransformerBlock used in the encoder, plus a decoder multi-head attention
-        :param embed_dim: the embedding dimension
-        :param heads: the number of heads
-        :param expansion_factor: the factor that determines the output dimension of the feed forward layer
-        :param dropout: probability dropout (between 0 and 1)
-        """
-        super().__init__()
-
-        # First define the Decoder Multi-head attention
-        self.attention = MultiHeadAttention(embed_dim, heads)
-        # normalization
-        self.norm = nn.LayerNorm(embed_dim)
-        # Dropout to avoid overfitting
-        self.dropout = nn.Dropout(dropout)
-        # finally th transformerBlock
-        self.transformerBlock = Block(embed_dim, heads, expansion_factor, dropout)
-
-    def forward(self, key, query, x, mask):
-        # pass the inputs to the decoder multi-head attention
-        decoder_attention = self.attention(x, x, x, mask)
-        # residual connection + normalization
-        value = self.dropout(self.norm(decoder_attention + x))
-        # finally the transformerBlock (multi-head attention -> residual + norm -> feed forward -> residual + norm)
-        decoder_attention_output = self.transformerBlock(key, query, value)
-
-        return decoder_attention_output
+from src.blocks import MuliDecoderBlock
 
 
 class Decoder(nn.Module):
@@ -69,7 +32,7 @@ class Decoder(nn.Module):
         :param heads: he number of heads in each decoder
         :param dropout: probability dropout (between 0 and 1)
         """
-        super(Decoder, self).__init__()
+        super().__init__()
 
         # define the embedding
         self.embedding = nn.Embedding(target_vocab_size, embed_dim)
@@ -77,10 +40,14 @@ class Decoder(nn.Module):
         self.positional_encoder = PositionalEncoding(embed_dim, seq_len)
 
         # define the set of decoders
-        self.blocks = replicate(DecoderBlock(embed_dim, heads, expansion_factor, dropout), num_blocks)
-        # dropout for overfitting
+        self.blocks = MuliDecoderBlock(
+            num_blocks=num_blocks,
+            embed_idm=embed_dim,
+            heads=heads,
+            expension_factor=expansion_factor,
+            dropout=dropout
+            ).blocks
         self.dropout = nn.Dropout(dropout)
-
     def forward(self, x, encoder_output, mask):
         x = self.dropout(self.positional_encoder(self.embedding(x)))  # 32x10x512
 
