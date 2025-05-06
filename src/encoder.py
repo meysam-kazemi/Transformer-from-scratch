@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.embedder import Embedder
 from src.multi_head_attention import MultiHeadAttention
 from src.positional_encoding import PositionalEncoding
-from src.block import Block
+from src.block import MultiBlock
 
 class Encoder(nn.Module):
     def __init__(
@@ -37,7 +37,13 @@ class Encoder(nn.Module):
         self.embedding = Embedder(vocab_size, embed_dim)
         self.pe = PositionalEncoding(embed_dim, seq_len)
         # list of blocks
-        self.blocks = nn.ModuleList([copy.deepcopy(Block(embed_dim, heads, expansion_factor, dropout)) for _ in range(num_blocks)])
+        self.blocks = MultiBlock(
+            num_blocks=num_blocks,
+            embed_idm=embed_dim,
+            heads=heads,
+            expension_factor=expension_factor,
+            dropout=dropout
+            ).blocks
 
     def forward(self, x):
         x = self.embedding(x)
