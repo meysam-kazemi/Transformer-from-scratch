@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import copy
 import torch
 from torch import nn
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -9,7 +10,7 @@ from src.embedder import Embedder
 from src.positional_encoding import PositionalEncoding
 
 
-class TransformerBlock(nn.Module):
+class Block(nn.Module):
     def __init__(self,
                  embed_dim=512,
                  heads=8,
@@ -24,7 +25,7 @@ class TransformerBlock(nn.Module):
         :param expansion_factor: the factor that determines the output dimension of the feed forward layer
         :param dropout: probability dropout (between 0 and 1)
         """
-        super(TransformerBlock, self).__init__()
+        super().__init__()
 
         self.attention = MultiHeadAttention(embed_dim, heads)  # the multi-head attention
         self.norm = nn.LayerNorm(embed_dim)  # the normalization layer
@@ -57,3 +58,17 @@ class TransformerBlock(nn.Module):
         fc_norm = self.dropout(self.norm(fc_out))  # e.g.: 32x10x512
 
         return fc_norm
+
+
+class MultiBlock(nn.Module):
+    def __init__(
+        self,
+        num_blocks=6,
+        embed_dim=512,
+        heads=8,
+        expansion_factor=4,
+        dropout=0.2
+        ):
+        self.blocks = nn.ModuleList([copy.deepcopy(Block(embed_dim, heads, expansion_factor, dropout)) for _ in range(num_blocks)])
+        
+
