@@ -3,10 +3,8 @@ import sys
 import torch.nn as nn
 import torch.nn.functional as F
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import replicate
-from src.multi_head_attentio import MultiHeadAttention
 from src.positional_encoding import PositionalEncoding
-from src.blocks import MuliDecoderBlock
+from src.blocks import MultiDecoderBlock
 
 
 class Decoder(nn.Module):
