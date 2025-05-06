@@ -10,7 +10,7 @@ from src.embedder import Embedder
 from src.positional_encoding import PositionalEncoding
 
 
-class Block(nn.Module):
+class EncoderBlock(nn.Module):
     def __init__(self,
                  embed_dim=512,
                  heads=8,
@@ -60,7 +60,7 @@ class Block(nn.Module):
         return fc_norm
 
 
-class MultiBlock(nn.Module):
+class MultiEncoderBlock(nn.Module):
     def __init__(
         self,
         num_blocks=6,
@@ -72,3 +72,50 @@ class MultiBlock(nn.Module):
         self.blocks = nn.ModuleList([copy.deepcopy(Block(embed_dim, heads, expansion_factor, dropout)) for _ in range(num_blocks)])
         
 
+
+class DecoderBlock(nn.Module):
+
+    def __init__(self,
+                 embed_dim=512,
+                 heads=8,
+                 expansion_factor=4,
+                 dropout=0.2
+                 ):
+        """
+        The DecoderBlock which will consist of the TransformerBlock used in the encoder, plus a decoder multi-head attention
+        :param embed_dim: the embedding dimension
+        :param heads: the number of heads
+        :param expansion_factor: the factor that determines the output dimension of the feed forward layer
+        :param dropout: probability dropout (between 0 and 1)
+        """
+        super(DecoderBlock, self).__init__()
+
+        # First define the Decoder Multi-head attention
+        self.attention = MultiHeadAttention(embed_dim, heads)
+        # normalization
+        self.norm = nn.LayerNorm(embed_dim)
+        # Dropout to avoid overfitting
+        self.dropout = nn.Dropout(dropout)
+        # finally th transformerBlock
+        self.encoder_block = EncoderBlock(embed_dim, heads, expansion_factor, dropout)
+
+    def forward(self, query, key, x, mask):
+        # pass the inputs to the decoder multi-head attention
+        decoder_attention = self.attention(x, x, x, mask)
+        # residual connection + normalization
+        value = self.dropout(self.norm(decoder_attention + x))
+        # finally the transformerBlock (multi-head attention -> residual + norm -> feed forward -> residual + norm)
+        decoder_attention_output = self.encoder_block(query, key, value)
+
+        return decoder_attention_output
+
+class MultiDecoderBlock(nn.Module):
+    def __init__(
+        self,
+        num_blocks=6,
+        embed_dim=512,
+        heads=8,
+        expansion_factor=4,
+        dropout=0.2
+        ):
+        self.blocks = nn.ModuleList([copy.deepcopy(DecoderBlock(embed_dim, heads, expansion_factor, dropout)) for _ in range(num_blocks)])
