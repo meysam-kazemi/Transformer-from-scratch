@@ -1,10 +1,8 @@
 import os
 import sys
 import torch.nn as nn
-import torch.nn.functional as F
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.positional_encoding import PositionalEncoding
-from src.blocks import MultiDecoderBlock
 
 
 class Decoder(nn.Module):
