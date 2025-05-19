@@ -5,8 +5,7 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader, Dataset
 from src.transformer import Transformer
-from data.dummy_data import DummyDtaset
-
+from data.dummy_data import DummyDataset
 
 def train(transformer_model: Transformer, data: Dataset, **kwargs):
     batch_size = kwargs.get("batch_size", 128)
@@ -64,5 +63,5 @@ def train(transformer_model: Transformer, data: Dataset, **kwargs):
                 }, checkpoint_path)
                 print(f"Checkpoint saved: {checkpoint_path}")
 
-train("", "")
+dataset = DummyDataset()
 
