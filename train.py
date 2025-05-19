@@ -2,10 +2,11 @@ import os
 import numpy as np
 import torch
 from torch import nn
-from src import transformer
 from torch import optim
 from torch.utils.data import DataLoader, Dataset
 from src.transformer import Transformer
+from data.dummy_data import DummyDtaset
+
 
 def train(transformer_model: Transformer, data: Dataset, **kwargs):
     batch_size = kwargs.get("batch_size", 128)
