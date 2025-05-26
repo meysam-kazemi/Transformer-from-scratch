@@ -1,21 +1,30 @@
 import torch
 from torch.utils.data import Dataset
+from datasets import load_dataset
+import nltk
+nltk.download('punkt')
+nltk.download('punkt_tab')
+from nltk.tokenize import word_tokenizer
+from counter import Counter
 
-class DummyDataset(Dataset):
-    def __init__(self, num_samples=1000, seq_length=20, vocab_size=50):
-        super().__init__()
-        self.num_samples = num_samples
-        self.seq_length = seq_length
-        self.vocab_size = vocab_size
-        # Generate random integer sequences as source and target (shift targets for teacher forcing).
-        self.data = []
-        for _ in range(num_samples):
-            src = torch.randint(2, vocab_size, (seq_length,))
-            tgt = torch.randint(2, vocab_size, (seq_length,))
-            self.data.append((src, tgt))
-    
-    def __len__(self):
-        return self.num_samples
-    
-    def __getitem__(self, idx):
-        return self.data[idx]
+dataset = load_dataset("opus-books", "en-nl", split="train")
+
+SRC_LNG = "nl"
+TGT_LNG = "en"
+
+special_symbols = ["<unk>", "<pad>", "bos", "eos"]
+UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
+
+
+def build_vocab(dataset, lang):
+    counter = Counter()
+    for item in dataset:
+        counter.update(word_tokenizer(item['translation'][lang]))
+    vocab = {sym:i for i, sym in enumerate(special_symbols)}
+    for word in counter:
+        if word not in vocab:
+            vocab[word] = len(vocab)
+    return vocab
+
+
+
