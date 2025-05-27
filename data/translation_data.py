@@ -57,12 +57,13 @@ def prepare_batch(batch):
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
 valid_loader = DataLoader(valid_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
 
-src_sample, tgt_sample = next(iter(train_loader))
+if __name__=="__main__":
+    src_sample, tgt_sample = next(iter(train_loader))
 
-print("src_sample shape: {}".format(src_sample.shape))
-print("tgt_sample shape: {}".format(tgt_sample.shape))
-print("src_sample example: {}".format(src_sample[0]))
-print("tgt_sample example: {}".format(tgt_sample[0]))
+    print("src_sample shape: {}".format(src_sample.shape))
+    print("tgt_sample shape: {}".format(tgt_sample.shape))
+    print("src_sample example: {}".format(src_sample[0]))
+    print("tgt_sample example: {}".format(tgt_sample[0]))
 
 
 
