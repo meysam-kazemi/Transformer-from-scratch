@@ -1,5 +1,6 @@
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+from torch.nn.utils.rnn import pad_sequence
 from datasets import load_dataset
 import nltk
 nltk.download('punkt')
@@ -30,6 +31,28 @@ import pdb; pdb.set_trace()
 src_vocab = build_vocab(dataset, SRC_LNG)
 tgt_vocab = build_vocab(dataset, TGT_LNG)
 
-print(type(src_vocab))
+# Ta inja okeye
+
+def tokenize(text):
+    return word_tokenize(text.lower())
+
+def encode(text, vocab):
+    return [vocab.get(tok, UNK_IDX) for tok in tokenize(text)]
+
+def numerify(item, vocab, lang):
+    encoded = encode(item['translation'][lang], vocab)
+    return torch.tensor([BOS_IDX]+encoded+[EOS_IDX], dtype=torch.long)
+
+def prepare_batch(batch):
+    src_batch, tgt_batch = [], []
+    for item in batch:
+        src_batch.append(numerify(item, src_vocab, SRC_LNG))
+        tgt_batch.append(numerify(item, tgt_vocab, TGT_LNG))
+
+        src_batch = pad_sequence(src_batch, batch_first=True, padding_value=PAD_IDX)
+        tgt_batch = pad_sequence(tgt_batch, batch_first=True, padding_value=PAD_IDX)
+
+        
+
 
 
