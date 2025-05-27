@@ -10,7 +10,7 @@ from collections import Counter
 
 SRC_LNG = "en"
 TGT_LNG = "nl"
-BATCH_SIZE = "8"
+BATCH_SIZE = 8
 
 train_data = load_dataset("opus_books", "en-nl", split="train[:90%]")
 valid_data = load_dataset("opus_books", "en-nl", split="train[90%:]")
@@ -29,9 +29,8 @@ def build_vocab(dataset, lang):
             vocab[word] = len(vocab)
     return vocab
 
-import pdb; pdb.set_trace()
-src_vocab = build_vocab(dataset, SRC_LNG)
-tgt_vocab = build_vocab(dataset, TGT_LNG)
+src_vocab = build_vocab(train_data, SRC_LNG)
+tgt_vocab = build_vocab(train_data, TGT_LNG)
 
 # Ta inja okeye
 
@@ -51,15 +50,19 @@ def prepare_batch(batch):
         src_batch.append(numerify(item, src_vocab, SRC_LNG))
         tgt_batch.append(numerify(item, tgt_vocab, TGT_LNG))
 
-        src_batch = pad_sequence(src_batch, batch_first=True, padding_value=PAD_IDX)
-        tgt_batch = pad_sequence(tgt_batch, batch_first=True, padding_value=PAD_IDX)
+    src_batch = pad_sequence(src_batch, batch_first=True, padding_value=PAD_IDX)
+    tgt_batch = pad_sequence(tgt_batch, batch_first=True, padding_value=PAD_IDX)
     return src_batch, tgt_batch
 
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
 valid_loader = DataLoader(valid_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
 
-        
+src_sample, tgt_sample = next(iter(train_loader))
 
+print("src_sample shape: {}".format(src_sample.shape))
+print("tgt_sample shape: {}".format(tgt_sample.shape))
+print("src_sample example: {}".format(src_sample[0]))
+print("tgt_sample example: {}".format(tgt_sample[0]))
 
 
 
