@@ -8,10 +8,12 @@ nltk.download('punkt_tab')
 from nltk.tokenize import word_tokenize
 from collections import Counter
 
-dataset = load_dataset("opus_books", "en-nl", split="train")
-
 SRC_LNG = "en"
 TGT_LNG = "nl"
+BATCH_SIZE = "8"
+
+train_data = load_dataset("opus_books", "en-nl", split="train[:90%]")
+valid_data = load_dataset("opus_books", "en-nl", split="train[90%:]")
 
 special_symbols = ["<unk>", "<pad>", "bos", "eos"]
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
@@ -51,8 +53,13 @@ def prepare_batch(batch):
 
         src_batch = pad_sequence(src_batch, batch_first=True, padding_value=PAD_IDX)
         tgt_batch = pad_sequence(tgt_batch, batch_first=True, padding_value=PAD_IDX)
+    return src_batch, tgt_batch
+
+train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
+valid_loader = DataLoader(valid_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=prepare_batch)
 
         
+
 
 
 
