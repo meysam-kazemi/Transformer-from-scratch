@@ -2,21 +2,20 @@ import os
 import sys
 from torch import nn
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.embedder import Embedder
-from src.positional_encoding import PositionalEncoding
-from src.blocks import MultiEncoderBlock
+from src.multi_head_attention import MultiHeadAttention
 
-class Encoder(nn.Module):
-    def __init__(
-        self,
-        seq_len,
-        vocab_size,
-        embed_dim,
-        num_blocks=6,
-        expansion_factor=4,
-        heads=8,
-        dropout=0.2,
-    ):
+class PositionWiseFeedForward(nn.Module):
+    def __init__(self, d_model, d_ff):
+        super(PositionWiseFeedForward, self).__init__()
+        self.fc1 = nn.Linear(d_model, d_ff)
+        self.fc2 = nn.Linear(d_ff, d_model)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        return self.fc2(self.relu(self.fc1(x)))
+
+class EncoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout):
         """
         The Encoder part of the Transformer architecture
         it is a set of stacked encoders on top of each others, in the paper they used stack of 6 encoders
@@ -30,25 +29,15 @@ class Encoder(nn.Module):
         :param dropout: probability dropout (between 0 and 1)
         """
         super().__init__()
-        self.embedding = Embedder(vocab_size, embed_dim)
-        self.pe = PositionalEncoding(embed_dim, seq_len)
-        # list of blocks
-        self.blocks = MultiEncoderBlock(
-            num_blocks=num_blocks,
-            embed_idm=embed_dim,
-            heads=heads,
-            expension_factor=expansion_factor,
-            dropout=dropout
-            ).blocks
+        self.self_attn = MultiHeadAttention(d_model, num_heads)
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
-        x = self.embedding(x)
-        x = self.pe(x)
-        for block in self.blocks:
-            x = block(x, x, x)
-
+    def forward(self, x, mask):
+        attn_output = self.self_attn(x, x, x, mask)
+        x = self.norm1(x + self.dropout(attn_output))
+        ff_output = self.feed_forward(x)
+        x = self.norm2(x + self.dropout(ff_output))
         return x
-
-
-        
-

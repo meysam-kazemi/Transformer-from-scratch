@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
+
 class PositionalEncoding(nn.Module):
     """
     Implements positional encoding as described in the "Attention is All You Need" paper.
