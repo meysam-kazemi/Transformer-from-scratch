@@ -2,20 +2,11 @@ import os
 import sys
 import torch.nn as nn
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from src.positional_encoding import PositionalEncoding
+from src.multi_head_attention import MultiHeadAttention
+from src.feed_forward import PositionWiseFeedForward
 
-
-class Decoder(nn.Module):
-
-    def __init__(self,
-                 target_vocab_size,
-                 seq_len,
-                 embed_dim=512,
-                 num_blocks=6,
-                 expansion_factor=4,
-                 heads=8,
-                 dropout=0.2
-                 ):
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout):
         """
         The Decoder part of the Transformer architecture
 
@@ -29,25 +20,19 @@ class Decoder(nn.Module):
         :param dropout: probability dropout (between 0 and 1)
         """
         super().__init__()
-
-        # define the embedding
-        self.embedding = nn.Embedding(target_vocab_size, embed_dim)
-        # the positional embedding
-        self.positional_encoder = PositionalEncoding(embed_dim, seq_len)
-
-        # define the set of decoders
-        self.blocks = MuliDecoderBlock(
-            num_blocks=num_blocks,
-            embed_idm=embed_dim,
-            heads=heads,
-            expension_factor=expansion_factor,
-            dropout=dropout
-            ).blocks
+        self.self_attn = MultiHeadAttention(d_model, num_heads)
+        self.cross_attn = MultiHeadAttention(d_model, num_heads)
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.norm3 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    def forward(self, x, encoder_output, mask):
-        x = self.dropout(self.positional_encoder(self.embedding(x)))  # 32x10x512
 
-        for block in self.blocks:
-            x = block(encoder_output, x, encoder_output, mask)
-
+    def forward(self, x, enc_output, src_mask, tgt_mask):
+        attn_output = self.self_attn(x, x, x, tgt_mask)
+        x = self.norm1(x + self.dropout(attn_output))
+        attn_output = self.cross_attn(x, enc_output, enc_output, src_mask)
+        x = self.norm2(x + self.dropout(attn_output))
+        ff_output = self.feed_forward(x)
+        x = self.norm3(x + self.dropout(ff_output))
         return x
