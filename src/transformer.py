@@ -2,54 +2,44 @@ import os
 import sys
 import torch
 from torch import nn
-import torch.nn.functional as F
 sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
-from src.decoder import Decoder
-from src.encoder import Encoder
+from src.decoder import DecoderLayer
+from src.encoder import EncoderLayer
+from src.positional_encoding import PositionalEncoding
 
 class Transformer(nn.Module):
+    def __init__(self, src_vocab_size, tgt_vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length, dropout):
+        super(Transformer, self).__init__()
+        self.encoder_embedding = nn.Embedding(src_vocab_size, d_model)
+        self.decoder_embedding = nn.Embedding(tgt_vocab_size, d_model)
+        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
 
-    def __init__(self,
-                 embed_dim,
-                 src_vocab_size,
-                 target_vocab_size,
-                 seq_len,
-                 num_blocks=6,
-                 expansion_factor=4,
-                 heads=8,
-                 dropout=0.2):
-        super().__init__()
-        self.target_vocab_size = target_vocab_size
+        self.encoder_layers = nn.ModuleList([EncoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
+        self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
 
-        self.encoder = Encoder(seq_len=seq_len,
-                               vocab_size=src_vocab_size,
-                               embed_dim=embed_dim,
-                               num_blocks=num_blocks,
-                               expansion_factor=expansion_factor,
-                               heads=heads,
-                               dropout=dropout)
+        self.fc = nn.Linear(d_model, tgt_vocab_size)
+        self.dropout = nn.Dropout(dropout)
 
-        self.decoder = Decoder(target_vocab_size=target_vocab_size,
-                               seq_len=seq_len,
-                               embed_dim=embed_dim,
-                               num_blocks=num_blocks,
-                               expansion_factor=expansion_factor,
-                               heads=heads,
-                               dropout=dropout)
+    def generate_mask(self, src, tgt):
+        src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
+        tgt_mask = (tgt != 0).unsqueeze(1).unsqueeze(3)
+        seq_length = tgt.size(1)
+        nopeak_mask = (1 - torch.triu(torch.ones(1, seq_length, seq_length), diagonal=1)).bool()
+        tgt_mask = tgt_mask & nopeak_mask
+        return src_mask, tgt_mask
 
-        self.fc_out = nn.Linear(embed_dim, target_vocab_size)
+    def forward(self, src, tgt):
+        src_mask, tgt_mask = self.generate_mask(src, tgt)
+        src_embedded = self.dropout(self.positional_encoding(self.encoder_embedding(src)))
+        tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
 
-    def make_trg_mask(self, trg):
-        batch_size, trg_len = trg.shape
-        # returns the lower triangular part of matrix filled with ones
-        trg_mask = torch.tril(torch.ones((trg_len, trg_len))).expand(
-            batch_size, 1, trg_len, trg_len
-        )
-        return trg_mask
+        enc_output = src_embedded
+        for enc_layer in self.encoder_layers:
+            enc_output = enc_layer(enc_output, src_mask)
 
-    def forward(self, source, target):
-        trg_mask = self.make_trg_mask(target)
-        enc_out = self.encoder(source)
-        outputs = self.decoder(target, enc_out, trg_mask)
-        output = F.softmax(self.fc_out(outputs), dim=-1)
+        dec_output = tgt_embedded
+        for dec_layer in self.decoder_layers:
+            dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
+
+        output = self.fc(dec_output)
         return output
