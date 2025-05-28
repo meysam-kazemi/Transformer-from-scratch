@@ -5,10 +5,20 @@ from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader, Dataset
 from src.transformer import Transformer
-from data.translation_data import train_data, valid_data
+from data.translation_data import train_data, valid_data, src_vocab, tgt_vocab
 
-def train(transformer_model: Transformer, data: Dataset, **kwargs):
-    batch_size = kwargs.get("batch_size", 128)
+model = Transformer(
+    embed_dim=32,
+    src_vocab_size=len(src_vocab),
+    target_vocab_size=len(tgt_vocab),
+    seq_len=500,
+    num_blocks=6,
+    expansion_factor=4,
+    heads=8,
+    dropout=0.2
+)
+
+def train(transformer_model: Transformer, train_loader: DataLoader, valid_loader: DataLoader, **kwargs):
     epoch = kwargs.get("epoch", 2)
     log_interval = kwargs.get("log_interval", 100)
     save_model_dir = kwargs.get("save_model_dir", './models/')
@@ -19,14 +29,13 @@ def train(transformer_model: Transformer, data: Dataset, **kwargs):
     optimizer = optim.Adam(transformer_model.parameters(), lr=args.learning_rate)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_gamma)
 
-    data_loader = DataLoader(data, batch_size=batch_size, shuffle=True)
-    n_data = len(data_loader)
+    n_data = len(train_loader)
 
     transformer_model.train()
     
     for e in range(epoch):
         total_loss = 0.0
-        for i, (src, tgt) in enumerate(data_loader):
+        for i, (src, tgt) in enumerate(train_loader):
             n_dots_for_print = ((i%3)+1)*'.'
             print(f"{(i/n_data)*100:>5.2f}% The model is Training{n_dots_for_print} ", end='\r')
             src = src.to(device)

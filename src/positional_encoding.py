@@ -55,3 +55,7 @@ class PositionalEncoding(nn.Module):
 
 
 
+if __name__=="__main__":
+    positional_encoder = PositionalEncoding()
+
+
