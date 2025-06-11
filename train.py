@@ -13,7 +13,7 @@ model = Transformer(
     num_heads=8,
     num_layers=6,
     d_ff=2048,
-    max_seq_length=512,
+    max_seq_length=1024,
     dropout=0.1
 )
 
