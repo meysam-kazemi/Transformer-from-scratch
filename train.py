@@ -1,11 +1,10 @@
 import os
-import numpy as np
 import torch
 from torch import nn
 from torch import optim
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from src.transformer import Transformer
-from data.translation_data import train_data, valid_data, src_vocab, tgt_vocab
+from data.translation_data import train_loader, valid_loader, src_vocab, tgt_vocab
 
 model = Transformer(
     src_vocab_size=len(src_vocab),
@@ -26,8 +25,8 @@ def train(transformer_model: Transformer, train_loader: DataLoader, valid_loader
 
     transformer_model.to(device)
     criterion = nn.CrossEntropyLoss(ignore_index=0)
-    optimizer = optim.Adam(transformer_model.parameters(), lr=args.learning_rate)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_gamma)
+    optimizer = optim.Adam(transformer_model.parameters(), lr=1e-4)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
     n_data = len(train_loader)
 
@@ -86,4 +85,4 @@ def train(transformer_model: Transformer, train_loader: DataLoader, valid_loader
                 print(f"Checkpoint saved: {checkpoint_path}")
 
 if __name__=="__main__":
-    train(model, train_data, valid_data)
+    train(model, train_loader, valid_loader)
