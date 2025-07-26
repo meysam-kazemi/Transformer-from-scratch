@@ -15,10 +15,7 @@ Dataset
 The project uses a translation dataset
 
 ### Setup
-Clone the repository:
-git clone https://github.com/meysam-kazemi/Transformer-from-Scratch.git
-cd Transformer-from-Scratch
-
+Clone the repository
 
 Install dependencies:
 ```
