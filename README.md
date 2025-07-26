@@ -4,7 +4,7 @@ This repository, Transformer-from-Scratch, is a practice project aimed at implem
 Project Structure
 
 
-<img width="189" height="267" alt="image" src="https://github.com/user-attachments/assets/e84e0192-b134-4469-9c74-fb5b1a53dc63" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/e84e0192-b134-4469-9c74-fb5b1a53dc63" />
 
 
 
