@@ -32,7 +32,6 @@ def build_vocab(dataset, lang):
 src_vocab = build_vocab(train_data, SRC_LNG)
 tgt_vocab = build_vocab(train_data, TGT_LNG)
 
-# Ta inja okeye
 
 def tokenize(text):
     return word_tokenize(text.lower())
@@ -64,7 +63,4 @@ if __name__=="__main__":
     print("tgt_sample shape: {}".format(tgt_sample.shape))
     print("src_sample example: {}".format(src_sample[0]))
     print("tgt_sample example: {}".format(tgt_sample[0]))
-
-    import pdb; pdb.set_trace()
-
 
