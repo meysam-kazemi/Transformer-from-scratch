@@ -36,7 +36,12 @@ The code automatically detects GPU availability.
 
 Usage
 Training the Model
-To train the transformer model, run:
+To train the transformer model, run the following from the repository root
+(the imports require the root as the working directory):
 ```
-python src/train.py
+python train.py
 ```
+
+### Reproducibility
+Training sets a fixed random seed (`SEED = 42` in `train.py`) so runs are
+reproducible. Override it by editing the constant at the top of `train.py`.
