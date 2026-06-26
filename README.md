@@ -1,47 +1,55 @@
-# Transformer-from-Scratch
-### Overview
-This repository, Transformer-from-Scratch, is a practice project aimed at implementing and training a transformer model from scratch for language translation tasks. The goal is to deepen understanding of transformer architectures, widely used in natural language processing (NLP), by building and experimenting with a model on a translation dataset. The project includes code for training the model, evaluating its performance, and exploring transformer-based architectures.
-Project Structure
+# Transformer from Scratch
 
+A from-scratch PyTorch implementation of the Transformer architecture from
+["Attention Is All You Need"](https://arxiv.org/abs/1706.03762), trained for
+English→Dutch translation on the `opus_books` dataset. Built to deepen
+understanding of the core building blocks — multi-head attention, positional
+encoding, encoder/decoder stacks — rather than to use a high-level library.
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/e84e0192-b134-4469-9c74-fb5b1a53dc63" />
+<img width="400" alt="Transformer architecture" src="https://github.com/user-attachments/assets/e84e0192-b134-4469-9c74-fb5b1a53dc63" />
 
+## Project Structure
 
+- `src/` — model components (attention, encoder, decoder, embeddings, etc.)
+- `data/translation_data.py` — dataset loading, tokenization, and batching
+- `train.py` — training entry point
+- `tests/` — pytest unit tests
 
-src/: Source code for the transformer model implementation and related scripts.
-train.py: Script to train the transformer model on the translation dataset.
+## Dataset
 
-Dataset
-The project uses a translation dataset
+English→Dutch pairs from the [`opus_books`](https://huggingface.co/datasets/opus_books)
+dataset, loaded via Hugging Face `datasets` and tokenized with NLTK.
 
-### Setup
-Clone the repository
+## Setup
 
-Install dependencies:
-```
+```bash
+git clone https://github.com/meysam-kazemi/Transformer-from-scratch.git
+cd Transformer-from-scratch
 pip install -r requirements.txt
 ```
 
-Prepare the dataset:
+GPU is used automatically if a CUDA-compatible device is available.
 
-Place your translation dataset in the data/ directory.
-Update dataset paths in train.py or any configuration file as needed.
+## Usage
 
+Run training from the repository root:
 
-Optional: GPU Support:
-Ensure a CUDA-compatible GPU and PyTorch with CUDA support for faster training.
-The code automatically detects GPU availability.
-
-
-
-Usage
-Training the Model
-To train the transformer model, run the following from the repository root
-(the imports require the root as the working directory):
-```
+```bash
 python train.py
 ```
 
-### Reproducibility
-Training sets a fixed random seed (`SEED = 42` in `train.py`) so runs are
-reproducible. Override it by editing the constant at the top of `train.py`.
+## Reproducibility
+
+A fixed seed (`SEED = 42` in `train.py`) makes runs reproducible. Edit the
+constant to change it.
+
+## Model Configuration
+
+Defaults (see `train.py`): `d_model=512`, `num_heads=8`, `num_layers=6`,
+`d_ff=2048`, `dropout=0.1`.
+
+## Tests
+
+```bash
+pytest
+```
