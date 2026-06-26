@@ -1,10 +1,18 @@
 import os
+import random
+import numpy as np
 import torch
 from torch import nn
 from torch import optim
 from torch.utils.data import DataLoader
 from src.transformer import Transformer
 from data.translation_data import train_loader, valid_loader, src_vocab, tgt_vocab
+
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
 
 model = Transformer(
     src_vocab_size=len(src_vocab),
